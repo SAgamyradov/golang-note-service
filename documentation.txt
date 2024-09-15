@@ -1,0 +1,24 @@
+docker-compose build
+
+docker-compose up
+
+
+POST http://localhost:8080/auth/login
+Body:
+{
+    "username": "user",
+    "password": "password"
+}
+
+POST http://localhost:8080/notes
+Headers:
+Authorization: Bearer <your_token>
+Body:
+{
+    "title": "Note Title",
+    "content": "This is a test note."
+}
+
+GET http://localhost:8080/notes
+Headers:
+Authorization: Bearer <your_token>
