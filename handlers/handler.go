@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"note-service/middleware"
 	"note-service/model"
 	"note-service/service"
 	"note-service/utils"
@@ -61,4 +62,34 @@ func GetNotesHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(userNotes)
+}
+
+var (
+	users = map[string]string{
+		"user": "password", // simple hardcoded user
+	}
+)
+
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	var creds map[string]string
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid input")
+		return
+	}
+
+	password, ok := users[creds["username"]]
+	if !ok || password != creds["password"] {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "Invalid credentials")
+		return
+	}
+
+	// Generation JWT
+	token, err := middleware.GenerateToken(creds["username"])
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Could not generate token")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
